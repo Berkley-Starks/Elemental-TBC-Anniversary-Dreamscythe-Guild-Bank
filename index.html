@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guild Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   CONFIGURATION — Change your guild name and colors here
+   ================================================================ */
+:root {
+  /* Guild identity */
+  --guild-name: "My Guild";
+
+  /* Core palette — dark parchment / gold / warm bronze */
+  --bg-darkest:    #0a0908;
+  --bg-dark:       #13110f;
+  --bg-card:       #1a1714;
+  --bg-card-hover: #211e19;
+  --bg-input:      #0f0e0c;
+
+  --border-dark:   #2a2520;
+  --border-gold:   #8b7340;
+  --border-glow:   #c9a84c;
+
+  --gold:          #c9a84c;
+  --gold-bright:   #e5c76b;
+  --gold-dim:      #8b7340;
+  --bronze:        #a0845c;
+
+  --text-primary:  #e8dcc8;
+  --text-secondary:#9c8e7a;
+  --text-muted:    #6b5f50;
+  --text-gold:     #c9a84c;
+
+  /* Quality colors (WoW item quality) */
+  --quality-poor:      #9d9d9d;
+  --quality-common:    #e8dcc8;
+  --quality-uncommon:  #1eff00;
+  --quality-rare:      #0070dd;
+  --quality-epic:      #a335ee;
+  --quality-legendary: #ff8000;
+
+  /* Status colors */
+  --status-stock:   #4ade80;
+  --status-low:     #fbbf24;
+  --status-out:     #ef4444;
+  --status-pending: #fbbf24;
+  --status-ready:   #60a5fa;
+  --status-done:    #4ade80;
+  --status-denied:  #9d9d9d;
+
+  /* Wowhead base URL */
+  --wowhead-base: "https://www.wowhead.com/classic/item=";
+}
+
+/* ================================================================
+   RESET & BASE
+   ================================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-darkest);
+  color: var(--text-primary);
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Subtle parchment texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(160,132,92,0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ================================================================
+   LAYOUT
+   ================================================================ */
+.page-wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+/* ================================================================
+   HEADER
+   ================================================================ */
+.site-header {
+  text-align: center;
+  padding: 2.5rem 0 2rem;
+  border-bottom: 1px solid var(--border-dark);
+  margin-bottom: 2rem;
+}
+
+.guild-crest {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.guild-name {
+  font-family: 'Cinzel', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 0 30px rgba(201,168,76,0.2);
+}
+
+.guild-subtitle {
+  font-family: 'Crimson Text', serif;
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  margin-top: 0.25rem;
+}
+
+.last-updated {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+  letter-spacing: 0.03em;
+}
+
+/* ================================================================
+   NAVIGATION TABS
+   ================================================================ */
+.nav-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border-dark);
+  margin-bottom: 2rem;
+}
+
+.nav-tab {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-tab:hover {
+  color: var(--text-secondary);
+}
+
+.nav-tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+/* ================================================================
+   TAB PANELS
+   ================================================================ */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ================================================================
+   SEARCH BAR
+   ================================================================ */
+.search-bar {
+  position: relative;
+  margin-bottom: 1.75rem;
+}
+
+.search-bar input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-dark);
+  color: var(--text-primary);
+  font-family: 'Crimson Text', serif;
+  font-size: 1rem;
+  padding: 0.7rem 1rem 0.7rem 2.5rem;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-bar input:focus {
+  border-color: var(--gold-dim);
+}
+
+.search-bar input::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.search-bar .search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+/* ================================================================
+   INVENTORY CATEGORIES
+   ================================================================ */
+.category-section {
+  margin-bottom: 1.75rem;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-dark);
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.category-header:hover .category-name {
+  color: var(--gold-bright);
+}
+
+.category-emoji { font-size: 1.2rem; }
+
+.category-name {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.15s;
+}
+
+.category-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.category-chevron {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+}
+
+.category-section.collapsed .category-chevron {
+  transform: rotate(-90deg);
+}
+
+.category-section.collapsed .category-items {
+  display: none;
+}
+
+/* ================================================================
+   ITEM ROWS
+   ================================================================ */
+.item-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  border-radius: 3px;
+  transition: background 0.12s;
+}
+
+.item-row:hover {
+  background: var(--bg-card-hover);
+}
+
+.item-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.item-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.12s;
+}
+
+.item-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Quality-colored item names */
+.item-link.q-poor      { color: var(--quality-poor); }
+.item-link.q-common    { color: var(--quality-common); }
+.item-link.q-uncommon  { color: var(--quality-uncommon); }
+.item-link.q-rare      { color: var(--quality-rare); }
+.item-link.q-epic      { color: var(--quality-epic); }
+.item-link.q-legendary { color: var(--quality-legendary); }
+
+.item-qty {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  padding-left: 1rem;
+}
+
+.item-qty.stock    { color: var(--status-stock); }
+.item-qty.low      { color: var(--status-low); }
+.item-qty.out      { color: var(--status-out); }
+
+.restock-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--status-out);
+  background: rgba(239,68,68,0.1);
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  margin-left: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ================================================================
+   REQUEST FORM
+   ================================================================ */
+.form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+  padding: 1.75rem;
+}
+
+.form-card h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.form-card .form-desc {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-dark);
+  color: var(--text-primary);
+  font-family: 'Crimson Text', serif;
+  font-size: 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--gold-dim);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-group select option {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Item request builder */
+.request-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.request-item-entry {
+  display: grid;
+  grid-template-columns: 1fr 80px 32px;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.request-item-entry input,
+.request-item-entry select {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-dark);
+  color: var(--text-primary);
+  font-family: 'Crimson Text', serif;
+  font-size: 0.95rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 4px;
+  outline: none;
+}
+
+.request-item-entry input:focus {
+  border-color: var(--gold-dim);
+}
+
+.btn-remove-item {
+  background: none;
+  border: 1px solid var(--border-dark);
+  color: var(--status-out);
+  font-size: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.btn-remove-item:hover {
+  background: rgba(239,68,68,0.15);
+  border-color: var(--status-out);
+}
+
+.btn-add-item {
+  background: none;
+  border: 1px dashed var(--border-dark);
+  color: var(--text-muted);
+  font-family: 'Crimson Text', serif;
+  font-size: 0.9rem;
+  padding: 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-add-item:hover {
+  border-color: var(--gold-dim);
+  color: var(--text-secondary);
+}
+
+.btn-submit {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bg-darkest);
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
+  border: none;
+  padding: 0.7rem 2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(201,168,76,0.2);
+}
+
+.btn-submit:hover {
+  background: linear-gradient(180deg, #ecd47a 0%, var(--gold-bright) 100%);
+  box-shadow: 0 2px 16px rgba(201,168,76,0.3);
+}
+
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-message {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 4px;
+  display: none;
+}
+
+.form-message.success {
+  display: block;
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.2);
+  color: var(--status-stock);
+}
+
+.form-message.error {
+  display: block;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: var(--status-out);
+}
+
+/* Autocomplete dropdown */
+.autocomplete-wrapper {
+  position: relative;
+}
+
+.autocomplete-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-dark);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.autocomplete-dropdown.open { display: block; }
+
+.autocomplete-option {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.autocomplete-option:hover,
+.autocomplete-option.highlighted {
+  background: var(--bg-card-hover);
+  color: var(--gold);
+}
+
+/* ================================================================
+   REQUEST LOG
+   ================================================================ */
+.log-table-wrap {
+  overflow-x: auto;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.log-table th {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.log-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid rgba(42,37,32,0.5);
+  vertical-align: top;
+}
+
+.log-table tr:hover td {
+  background: var(--bg-card-hover);
+}
+
+.status-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.status-badge.pending {
+  color: var(--status-pending);
+  background: rgba(251,191,36,0.1);
+  border: 1px solid rgba(251,191,36,0.2);
+}
+
+.status-badge.ready {
+  color: var(--status-ready);
+  background: rgba(96,165,250,0.1);
+  border: 1px solid rgba(96,165,250,0.2);
+}
+
+.status-badge.delivered {
+  color: var(--status-done);
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.2);
+}
+
+.status-badge.denied {
+  color: var(--status-denied);
+  background: rgba(157,157,157,0.1);
+  border: 1px solid rgba(157,157,157,0.2);
+}
+
+.log-items-cell {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.log-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 2rem !important;
+}
+
+/* ================================================================
+   SETUP NOTICE
+   ================================================================ */
+.setup-notice {
+  background: var(--bg-card);
+  border: 1px solid var(--gold-dim);
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.setup-notice h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+}
+
+.setup-notice p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.setup-notice code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  background: var(--bg-input);
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  color: var(--gold-bright);
+}
+
+/* ================================================================
+   LOADING & EMPTY STATES
+   ================================================================ */
+.loading-state,
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 3rem 1rem;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-dark);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 0.75rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 640px) {
+  .page-wrapper { padding: 1rem; }
+  .guild-name { font-size: 1.6rem; }
+  .nav-tab { padding: 0.6rem 0.75rem; font-size: 0.75rem; }
+  .form-row { grid-template-columns: 1fr; }
+  .request-item-entry { grid-template-columns: 1fr 60px 28px; }
+  .item-row { padding: 0.3rem 0.4rem; }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-darkest); }
+::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ============================================================
+       HEADER
+       ============================================================ -->
+  <header class="site-header">
+    <div class="guild-crest">🏦</div>
+    <h1 class="guild-name" id="guildName">Guild Bank</h1>
+    <p class="guild-subtitle">Supplies &amp; Request Tracker</p>
+    <p class="last-updated" id="lastUpdated">Loading...</p>
+  </header>
+
+  <!-- ============================================================
+       NAVIGATION
+       ============================================================ -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-tab="inventory">Inventory</button>
+    <button class="nav-tab" data-tab="request">Request Items</button>
+    <button class="nav-tab" data-tab="log">Request Log</button>
+  </nav>
+
+  <!-- ============================================================
+       SETUP NOTICE — Remove this once you've configured the site
+       ============================================================ -->
+  <div class="setup-notice" id="setupNotice">
+    <h3>⚙️ Setup Required</h3>
+    <p>Edit the <code>CONFIG</code> object at the bottom of <code>index.html</code> to connect your Google Apps Script and inventory data. See <code>SETUP.md</code> for full instructions.</p>
+    <p>This notice disappears automatically once the inventory loads successfully.</p>
+  </div>
+
+  <!-- ============================================================
+       TAB: INVENTORY
+       ============================================================ -->
+  <div class="tab-panel active" id="panel-inventory">
+    <div class="search-bar">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="inventorySearch" placeholder="Search items...">
+    </div>
+    <div id="inventoryContainer">
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading inventory...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: REQUEST FORM
+       ============================================================ -->
+  <div class="tab-panel" id="panel-request">
+    <div class="form-card">
+      <h2>Request Items</h2>
+      <p class="form-desc">Submit a request for items from the guild bank. An officer will prepare your items.</p>
+
+      <form id="requestForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="charName">Character Name</label>
+            <input type="text" id="charName" name="charName" placeholder="e.g. Legolàs" required>
+          </div>
+          <div class="form-group">
+            <label for="charClass">Class</label>
+            <select id="charClass" name="charClass">
+              <option value="">— Select —</option>
+              <option>Druid</option>
+              <option>Hunter</option>
+              <option>Mage</option>
+              <option>Paladin</option>
+              <option>Priest</option>
+              <option>Rogue</option>
+              <option>Shaman</option>
+              <option>Warlock</option>
+              <option>Warrior</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Items Requested</label>
+          <div class="request-items-list" id="requestItemsList">
+            <!-- Item rows added dynamically -->
+          </div>
+          <button type="button" class="btn-add-item" id="btnAddItem">+ Add another item</button>
+        </div>
+
+        <div class="form-group">
+          <label for="requestNote">Note (optional)</label>
+          <textarea id="requestNote" name="note" placeholder="e.g. For Thursday's Kara run, need before 7pm server"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnSubmit">Submit Request</button>
+        <div class="form-message" id="formMessage"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: REQUEST LOG
+       ============================================================ -->
+  <div class="tab-panel" id="panel-log">
+    <div class="log-table-wrap">
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Character</th>
+            <th>Items</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody">
+          <tr><td colspan="4" class="log-empty">Loading request log...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ================================================================
+// CONFIGURATION — Edit these values for your guild
+// ================================================================
+const CONFIG = {
+  // Path to inventory.json (relative for GitHub Pages, or absolute URL)
+  inventoryUrl: 'inventory.json',
+
+  // Google Apps Script Web App URL (from SETUP.md step 2)
+  // Leave blank to disable form submission and request log
+  appsScriptUrl: '',
+
+  // Wowhead base URL for item links
+  wowheadBase: 'https://www.wowhead.com/classic/item=',
+
+  // "Low stock" threshold — items at or below this count show yellow
+  lowStockThreshold: 5,
+};
+
+// ================================================================
+// STATE
+// ================================================================
+let inventoryData = null;
+let allItemNames = [];  // for autocomplete
+
+// ================================================================
+// TAB NAVIGATION
+// ================================================================
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+
+    if (tab.dataset.tab === 'log' && CONFIG.appsScriptUrl) {
+      loadRequestLog();
+    }
+  });
+});
+
+// ================================================================
+// INVENTORY
+// ================================================================
+async function loadInventory() {
+  try {
+    const resp = await fetch(CONFIG.inventoryUrl + '?_=' + Date.now());
+    if (!resp.ok) throw new Error('Failed to load inventory');
+    inventoryData = await resp.json();
+
+    document.getElementById('guildName').textContent = inventoryData.guild || 'Guild Bank';
+    const updated = new Date(inventoryData.updated);
+    document.getElementById('lastUpdated').textContent =
+      'Last updated: ' + updated.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) +
+      ' at ' + updated.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+
+    // Hide setup notice on successful load
+    document.getElementById('setupNotice').style.display = 'none';
+
+    // Build autocomplete list
+    allItemNames = [];
+    inventoryData.categories.forEach(cat => {
+      cat.items.forEach(item => allItemNames.push(item.name));
+    });
+    allItemNames.sort();
+
+    renderInventory();
+    addRequestItemRow(); // Add first empty row to request form
+  } catch (err) {
+    document.getElementById('inventoryContainer').innerHTML =
+      '<div class="empty-state">Could not load inventory. Make sure <code>inventory.json</code> exists.</div>';
+    console.error('Inventory load error:', err);
+  }
+}
+
+function renderInventory(filter = '') {
+  const container = document.getElementById('inventoryContainer');
+  const filterLower = filter.toLowerCase();
+
+  let html = '';
+  inventoryData.categories.forEach(cat => {
+    const filteredItems = cat.items.filter(item =>
+      !filterLower || item.name.toLowerCase().includes(filterLower)
+    );
+
+    if (filteredItems.length === 0 && filterLower) return;
+
+    const totalInCat = filteredItems.reduce((s, i) => s + i.count, 0);
+
+    html += `<div class="category-section">`;
+    html += `<div class="category-header" onclick="this.parentElement.classList.toggle('collapsed')">`;
+    html += `<span class="category-emoji">${cat.emoji || '📦'}</span>`;
+    html += `<span class="category-name">${escHtml(cat.name)}</span>`;
+    html += `<span class="category-count">${filteredItems.length} items · ${totalInCat} total</span>`;
+    html += `<span class="category-chevron">▾</span>`;
+    html += `</div>`;
+    html += `<div class="category-items">`;
+
+    filteredItems.forEach(item => {
+      const url = item.itemId && item.itemId !== '0'
+        ? CONFIG.wowheadBase + item.itemId
+        : null;
+      const qClass = 'q-' + (item.quality || 'common').toLowerCase();
+      let qtyClass = 'stock';
+      if (item.count === 0) qtyClass = 'out';
+      else if (item.count <= CONFIG.lowStockThreshold) qtyClass = 'low';
+
+      html += `<div class="item-row">`;
+      html += `<div class="item-name-wrap">`;
+      if (url) {
+        html += `<a href="${url}" target="_blank" rel="noopener" class="item-link ${qClass}">${escHtml(item.name)}</a>`;
+      } else {
+        html += `<span class="item-link ${qClass}">${escHtml(item.name)}</span>`;
+      }
+      html += `</div>`;
+      html += `<div>`;
+      html += `<span class="item-qty ${qtyClass}">×${item.count}</span>`;
+      if (item.count === 0) html += `<span class="restock-tag">restock</span>`;
+      html += `</div>`;
+      html += `</div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  if (!html) {
+    html = '<div class="empty-state">No items match your search.</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+// Search
+document.getElementById('inventorySearch').addEventListener('input', e => {
+  if (inventoryData) renderInventory(e.target.value);
+});
+
+// ================================================================
+// REQUEST FORM — ITEM ROW BUILDER WITH AUTOCOMPLETE
+// ================================================================
+let requestItemCounter = 0;
+
+function addRequestItemRow() {
+  const list = document.getElementById('requestItemsList');
+  const id = requestItemCounter++;
+  const row = document.createElement('div');
+  row.className = 'request-item-entry';
+  row.dataset.id = id;
+  row.innerHTML = `
+    <div class="autocomplete-wrapper">
+      <input type="text" placeholder="Item name..." data-role="itemName" autocomplete="off">
+      <div class="autocomplete-dropdown" data-for="${id}"></div>
+    </div>
+    <input type="number" min="1" value="1" data-role="itemQty" placeholder="Qty">
+    <button type="button" class="btn-remove-item" onclick="removeRequestItemRow(${id})">✕</button>
+  `;
+  list.appendChild(row);
+
+  // Autocomplete
+  const input = row.querySelector('[data-role="itemName"]');
+  const dropdown = row.querySelector('.autocomplete-dropdown');
+  let hlIndex = -1;
+
+  input.addEventListener('input', () => {
+    const val = input.value.toLowerCase();
+    if (!val) { dropdown.classList.remove('open'); return; }
+    const matches = allItemNames.filter(n => n.toLowerCase().includes(val)).slice(0, 10);
+    if (matches.length === 0) { dropdown.classList.remove('open'); return; }
+    hlIndex = -1;
+    dropdown.innerHTML = matches.map((m, i) =>
+      `<div class="autocomplete-option" data-index="${i}">${escHtml(m)}</div>`
+    ).join('');
+    dropdown.classList.add('open');
+
+    dropdown.querySelectorAll('.autocomplete-option').forEach(opt => {
+      opt.addEventListener('mousedown', e => {
+        e.preventDefault();
+        input.value = opt.textContent;
+        dropdown.classList.remove('open');
+      });
+    });
+  });
+
+  input.addEventListener('keydown', e => {
+    const opts = dropdown.querySelectorAll('.autocomplete-option');
+    if (!dropdown.classList.contains('open') || opts.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      hlIndex = Math.min(hlIndex + 1, opts.length - 1);
+      opts.forEach((o, i) => o.classList.toggle('highlighted', i === hlIndex));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      hlIndex = Math.max(hlIndex - 1, 0);
+      opts.forEach((o, i) => o.classList.toggle('highlighted', i === hlIndex));
+    } else if (e.key === 'Enter' && hlIndex >= 0) {
+      e.preventDefault();
+      input.value = opts[hlIndex].textContent;
+      dropdown.classList.remove('open');
+    } else if (e.key === 'Escape') {
+      dropdown.classList.remove('open');
+    }
+  });
+
+  input.addEventListener('blur', () => {
+    setTimeout(() => dropdown.classList.remove('open'), 150);
+  });
+}
+
+function removeRequestItemRow(id) {
+  const list = document.getElementById('requestItemsList');
+  const row = list.querySelector(`[data-id="${id}"]`);
+  if (row && list.children.length > 1) row.remove();
+}
+
+document.getElementById('btnAddItem').addEventListener('click', addRequestItemRow);
+
+// ================================================================
+// REQUEST FORM SUBMISSION
+// ================================================================
+document.getElementById('requestForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msgEl = document.getElementById('formMessage');
+  msgEl.className = 'form-message';
+  msgEl.style.display = 'none';
+
+  if (!CONFIG.appsScriptUrl) {
+    msgEl.textContent = 'Request form is not configured yet. See SETUP.md to connect Google Apps Script.';
+    msgEl.className = 'form-message error';
+    return;
+  }
+
+  const charName = document.getElementById('charName').value.trim();
+  const charClass = document.getElementById('charClass').value;
+  const note = document.getElementById('requestNote').value.trim();
+
+  // Collect items
+  const itemEntries = [];
+  document.querySelectorAll('.request-item-entry').forEach(row => {
+    const name = row.querySelector('[data-role="itemName"]').value.trim();
+    const qty = parseInt(row.querySelector('[data-role="itemQty"]').value) || 1;
+    if (name) itemEntries.push({ name, qty });
+  });
+
+  if (!charName) {
+    msgEl.textContent = 'Please enter your character name.';
+    msgEl.className = 'form-message error';
+    return;
+  }
+  if (itemEntries.length === 0) {
+    msgEl.textContent = 'Please add at least one item.';
+    msgEl.className = 'form-message error';
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    const payload = {
+      action: 'submitRequest',
+      charName,
+      charClass,
+      items: itemEntries,
+      note,
+      timestamp: new Date().toISOString()
+    };
+
+    const resp = await fetch(CONFIG.appsScriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await resp.json();
+
+    if (result.success) {
+      msgEl.textContent = 'Request submitted! An officer will prepare your items.';
+      msgEl.className = 'form-message success';
+      document.getElementById('requestForm').reset();
+      document.getElementById('requestItemsList').innerHTML = '';
+      addRequestItemRow();
+    } else {
+      throw new Error(result.error || 'Unknown error');
+    }
+  } catch (err) {
+    msgEl.textContent = 'Failed to submit: ' + err.message;
+    msgEl.className = 'form-message error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit Request';
+  }
+});
+
+// ================================================================
+// REQUEST LOG
+// ================================================================
+let logLoaded = false;
+
+async function loadRequestLog() {
+  if (logLoaded || !CONFIG.appsScriptUrl) return;
+
+  const tbody = document.getElementById('logTableBody');
+
+  try {
+    const resp = await fetch(CONFIG.appsScriptUrl + '?action=getRequests&_=' + Date.now());
+    const data = await resp.json();
+
+    if (!data.requests || data.requests.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="log-empty">No requests yet.</td></tr>';
+      logLoaded = true;
+      return;
+    }
+
+    tbody.innerHTML = '';
+    data.requests.reverse().forEach(req => {
+      const date = new Date(req.timestamp);
+      const dateStr = date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+
+      const itemsHtml = (req.items || [])
+        .map(i => `${escHtml(i.name)} ×${i.qty}`)
+        .join('<br>');
+
+      const statusClass = (req.status || 'pending').toLowerCase();
+      const statusLabel = req.status || 'Pending';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="white-space:nowrap">${dateStr}</td>
+        <td><strong>${escHtml(req.charName)}</strong>${req.charClass ? '<br><span style="color:var(--text-muted);font-size:0.8rem">' + escHtml(req.charClass) + '</span>' : ''}</td>
+        <td class="log-items-cell">${itemsHtml}</td>
+        <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    logLoaded = true;
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4" class="log-empty">Could not load request log.${!CONFIG.appsScriptUrl ? ' Apps Script URL not configured.' : ''}</td></tr>`;
+    console.error('Log load error:', err);
+  }
+}
+
+// ================================================================
+// UTILS
+// ================================================================
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ================================================================
+// INIT
+// ================================================================
+loadInventory();
+if (CONFIG.appsScriptUrl) {
+  // Pre-load log
+  loadRequestLog();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+# ============================================================================
+# Guild Bank Item Tracking List
+# ============================================================================
+# Add one item name per line (case-insensitive matching).
+# Lines starting with # are comments. Blank lines are ignored.
+#
+# CATEGORIES: Use [Category Name] headers to group items.
+# Items listed under a category header will appear under that section
+# in the Discord output. You can add any category name you want.
+#
+# The script has emoji mappings for common category names (Food, Flasks,
+# Elixirs, Potions, etc.) — you can customize them in the script's
+# $CategoryEmojis config section, or just use any name and get a 📦 default.
+#
+# Usage:
+#   .\Export-GuildBankToDiscord.ps1 -ItemListFile ".\tracked-items.txt"
+# ============================================================================
+
+[Food]
+Grilled Mudfish
+Feltail Delight
+Poached Bluefish
+Golden Fish Sticks
+Spicy Crawdad
+Blackened Basilisk
+Warp Burger
+Talbuk Steak
+Roasted Clefthoof
+Crunchy Serpent
+Mok'Nathal Shortribs
+Buzzard Bites
+Ravager Dog
+Blackened Sporefish
+Blackened Trout
+Fisherman's Feast
+
+[Flasks]
+Flask of Supreme Power
+Flask of Fortification
+Flask of Mighty Restoration
+Flask of Relentless Assault
+Flask of Pure Death
+Flask of Blinding Light
+Shattrath Flask of Fortification
+Shattrath Flask of Mighty Restoration
+Shattrath Flask of Pure Death
+Shattrath Flask of Blinding Light
+Shattrath Flask of Relentless Assault
+
+[Elixirs]
+# --- Battle Elixirs ---
+Elixir of Major Agility
+Elixir of Major Firepower
+Elixir of Major Frost Power
+Elixir of Major Shadow Power
+Elixir of Healing Power
+Elixir of Mastery
+Adept's Elixir
+Onslaught Elixir
+# --- Guardian Elixirs ---
+Elixir of Major Defense
+Elixir of Major Fortitude
+Elixir of Major Mageblood
+Elixir of Draenic Wisdom
+Elixir of Ironskin
+
+[Potions]
+Super Mana Potion
+Super Healing Potion
+Ironshield Potion
+Haste Potion
+Destruction Potion
+Heroic Potion
+Insane Strength Potion
+Free Action Potion
+
+[Oils]
+Superior Wizard Oil
+Superior Mana Oil
+Brilliant Wizard Oil
+Brilliant Mana Oil
+
+[Bandages]
+Heavy Netherweave Bandage
+Netherweave Bandage
+
+# ============================================================================
+# Uncomment categories below to start tracking them
+# ============================================================================
+
+# [Scrolls]
+# Scroll of Agility V
+# Scroll of Strength V
+# Scroll of Intellect V
+# Scroll of Spirit V
+# Scroll of Stamina V
+# Scroll of Protection V
+
+# [Primals]
+# Primal Fire
+# Primal Water
+# Primal Air
+# Primal Earth
+# Primal Mana
+# Primal Life
+# Primal Shadow
+# Primal Nether
+# Nether Vortex
+
+# [Crafting Materials]
+# Bolt of Imbued Netherweave
+# Primal Mooncloth
+# Shadowcloth
+# Spellcloth
+# Khorium Bar
+# Felsteel Bar
+# Hardened Adamantite Bar
+
+# [Gems]
+# Crimson Spinel
+# Empyrean Sapphire
+# Lionseye
+# Pyrestone
+# Seaspray Emerald
+# Shadowsong Amethyst
+
+# [Enchanting]
+# Large Prismatic Shard
+# Void Crystal
+# Arcane Dust
+# Nexus Crystal
+
+# [Herbs]
+# Fel Lotus
+# Nightmare Vine
+# Mana Thistle
+# Terocone
+# Ancient Lichen
+# Netherbloom
+# Dreaming Glory
+# Ragveil
+# Flame Cap
+
+# [Gear]
+# Add any tracked gear pieces here

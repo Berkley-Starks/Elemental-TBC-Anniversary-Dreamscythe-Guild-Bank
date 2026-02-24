@@ -1,0 +1,63 @@
+{
+  "guild": "My Guild",
+  "realm": "Pagle",
+  "updated": "2026-02-24T19:30:00",
+  "categories": [
+    {
+      "name": "Food",
+      "emoji": "🍖",
+      "items": [
+        { "name": "Grilled Mudfish", "count": 40, "itemId": "27664", "quality": "Common" },
+        { "name": "Feltail Delight", "count": 20, "itemId": "27662", "quality": "Common" },
+        { "name": "Poached Bluefish", "count": 15, "itemId": "27665", "quality": "Common" },
+        { "name": "Golden Fish Sticks", "count": 32, "itemId": "27666", "quality": "Common" },
+        { "name": "Spicy Crawdad", "count": 0, "itemId": "27667", "quality": "Common" },
+        { "name": "Blackened Basilisk", "count": 8, "itemId": "27657", "quality": "Common" },
+        { "name": "Warp Burger", "count": 0, "itemId": "27659", "quality": "Common" },
+        { "name": "Ravager Dog", "count": 25, "itemId": "27655", "quality": "Common" }
+      ]
+    },
+    {
+      "name": "Flasks",
+      "emoji": "🧪",
+      "items": [
+        { "name": "Flask of Supreme Power", "count": 12, "itemId": "13512", "quality": "Common" },
+        { "name": "Flask of Relentless Assault", "count": 6, "itemId": "22854", "quality": "Common" },
+        { "name": "Flask of Pure Death", "count": 0, "itemId": "22866", "quality": "Common" },
+        { "name": "Flask of Blinding Light", "count": 4, "itemId": "22861", "quality": "Common" },
+        { "name": "Flask of Mighty Restoration", "count": 9, "itemId": "22853", "quality": "Common" }
+      ]
+    },
+    {
+      "name": "Elixirs",
+      "emoji": "⚗️",
+      "items": [
+        { "name": "Elixir of Major Agility", "count": 18, "itemId": "22831", "quality": "Common" },
+        { "name": "Elixir of Major Firepower", "count": 22, "itemId": "22833", "quality": "Common" },
+        { "name": "Elixir of Draenic Wisdom", "count": 14, "itemId": "32067", "quality": "Common" },
+        { "name": "Elixir of Major Mageblood", "count": 10, "itemId": "22840", "quality": "Common" },
+        { "name": "Adept's Elixir", "count": 0, "itemId": "28103", "quality": "Common" }
+      ]
+    },
+    {
+      "name": "Potions",
+      "emoji": "🧃",
+      "items": [
+        { "name": "Super Mana Potion", "count": 45, "itemId": "22832", "quality": "Common" },
+        { "name": "Super Healing Potion", "count": 38, "itemId": "22829", "quality": "Common" },
+        { "name": "Haste Potion", "count": 7, "itemId": "22838", "quality": "Common" },
+        { "name": "Destruction Potion", "count": 5, "itemId": "22839", "quality": "Common" },
+        { "name": "Ironshield Potion", "count": 0, "itemId": "22849", "quality": "Common" }
+      ]
+    },
+    {
+      "name": "Oils",
+      "emoji": "🫗",
+      "items": [
+        { "name": "Superior Wizard Oil", "count": 12, "itemId": "22522", "quality": "Common" },
+        { "name": "Brilliant Wizard Oil", "count": 8, "itemId": "25128", "quality": "Common" },
+        { "name": "Superior Mana Oil", "count": 15, "itemId": "22521", "quality": "Common" }
+      ]
+    }
+  ]
+}
