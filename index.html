@@ -535,6 +535,11 @@ function renderInventory(search = '') {
   });
 
   container.innerHTML = html || '<div class="empty-state">No items match your search.</div>';
+
+  // Tell Wowhead to attach tooltips to the new links
+  if (typeof $WowheadPower !== 'undefined') {
+    $WowheadPower.refreshLinks();
+  }
 }
 
 document.getElementById('searchInput').addEventListener('input', e => {
@@ -553,5 +558,7 @@ function slug(s) {
 
 init();
 </script>
+<script>const whTooltips = {colorLinks: false, iconizeLinks: false, renameLinks: false};</script>
+<script src="https://wow.zamimg.com/js/tooltips.js"></script>
 </body>
 </html>
