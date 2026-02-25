@@ -57,7 +57,7 @@ body::before {
 .page-wrapper {
   position: relative;
   z-index: 1;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1.5rem 4rem;
 }
@@ -233,11 +233,15 @@ body::before {
 
 .category-items {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0 1.5rem;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 900px) {
+  .category-items { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 600px) {
   .category-items { grid-template-columns: 1fr; }
 }
 
@@ -508,7 +512,8 @@ function renderInventory(search = '') {
 
     items.forEach(item => {
       const url = item.itemId && item.itemId !== '0'
-        ? CONFIG.wowheadBase + item.itemId + '/' + slug(item.name) : null;
+        ? CONFIG.wowheadBase + item.itemId + '/' + slug(item.name)
+        : 'https://www.wowhead.com/tbc/search?q=' + encodeURIComponent(item.name);
       const qClass = 'q-' + (item.quality || 'common').toLowerCase();
 
       let qtyClass = 'stock';
@@ -521,9 +526,7 @@ function renderInventory(search = '') {
         tag = '<span class="low-tag">low</span>';
       }
 
-      const nameHtml = url
-        ? `<a href="${url}" target="_blank" rel="noopener" class="item-link ${qClass}">${esc(item.name)}</a>`
-        : `<span class="item-link ${qClass}">${esc(item.name)}</span>`;
+      const nameHtml = `<a href="${url}" target="_blank" rel="noopener" class="item-link ${qClass}">${esc(item.name)}</a>`;
 
       html += `<div class="item-row">${nameHtml}<div class="item-qty-wrap"><span class="item-qty ${qtyClass}">×${item.count}</span>${tag}</div></div>`;
     });
